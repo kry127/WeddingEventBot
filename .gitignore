@@ -20,6 +20,8 @@
 # Go workspace file
 go.work
 go.work.sum
+vendor
 
 # VSCode workspace file
 *.code-workspace
+.vscode
