@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/mymmrac/telego"
+	tu "github.com/mymmrac/telego/telegoutil"
 )
 
 type ConfigError struct {
@@ -43,8 +45,42 @@ func configureBot() (*telego.Bot, error) {
 	return bot, nil
 }
 
-func processUpdate(update telego.Update) error {
-	// TODO process updates
+func processUpdate(bot *telego.Bot, update telego.Update) error {
+	// Creating keyboard
+	keyboard := tu.Keyboard(
+		tu.KeyboardRow( // Row 1
+			// Column 1
+			tu.KeyboardButton("Button"),
+
+			// Column 2, `with` method
+			tu.KeyboardButton("Poll Regular").WithRequestPoll(tu.PollTypeRegular()),
+		),
+		tu.KeyboardRow( // Row 2
+			// Column 1, `with` method
+			tu.KeyboardButton("Contact").WithRequestContact(),
+
+			// Column 2, `with` method
+			tu.KeyboardButton("Vote for").WithRequestUsers(&telego.KeyboardButtonRequestUsers{}),
+		),
+		tu.KeyboardRow( // Row 3
+			tu.KeyboardButton("Griatech").WithWebApp(tu.WebAppInfo("https://gria.tech")),
+			tu.KeyboardButton("Requestchat").WithRequestChat(&telego.KeyboardButtonRequestChat{
+				RequestID: int32(update.UpdateID),
+			}),
+		),
+	).WithResizeKeyboard().WithInputFieldPlaceholder("Select something")
+	// Multiple `with` methods can be chained
+
+	// Creating message
+	msg := tu.Message(
+		tu.ID(update.Message.Chat.ID),
+		"Hello World",
+	).WithReplyMarkup(keyboard).WithProtectContent() // Multiple `with` method
+
+	_, err := bot.SendMessage(msg)
+	if err != nil {
+		return fmt.Errorf("send message error: %w", err)
+	}
 	return nil
 }
 
@@ -64,7 +100,7 @@ func startProcessingUpdates(ctx context.Context, bot *telego.Bot, workerCount in
 			for {
 				select {
 				case update := <-updates:
-					err := processUpdate(update)
+					err := processUpdate(bot, update)
 					if err != nil {
 						cancel(fmt.Errorf("worker %d stopped with error: %w", workerID, err))
 					}
@@ -110,7 +146,9 @@ func main() {
 		if !isRestarting {
 			break
 		}
-		fmt.Printf("Restarting bot processing")
+		timeoutSeconds := 1
+		fmt.Printf("Restarting bot processing after %d seconds", timeoutSeconds)
+		time.Sleep(time.Duration(timeoutSeconds) * time.Second)
 	}
 	fmt.Printf("Finish bot processing")
 }
