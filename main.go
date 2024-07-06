@@ -44,27 +44,27 @@ func configureBot(config *Config) (*telego.Bot, error) {
 }
 
 func processUpdate(bot *telego.Bot, update telego.Update) error {
-	// Creating keyboard
 	keyboard := tu.Keyboard(
-		tu.KeyboardRow( // Row 1
-			// Column 1
-			tu.KeyboardButton("Button"),
-
-			// Column 2, `with` method
-			tu.KeyboardButton("Poll Regular").WithRequestPoll(tu.PollTypeRegular()),
+		tu.KeyboardRow(
+			tu.KeyboardButton("✍️ Подписаться на обновления"),
 		),
-		tu.KeyboardRow( // Row 2
-			// Column 1, `with` method
-			tu.KeyboardButton("Contact").WithRequestContact(),
-
-			// Column 2, `with` method
-			tu.KeyboardButton("Vote for").WithRequestUsers(&telego.KeyboardButtonRequestUsers{}),
+		tu.KeyboardRow(
+			tu.KeyboardButton("📍 Где и когда свадьба?"),
 		),
-		tu.KeyboardRow( // Row 3
-			tu.KeyboardButton("Griatech").WithWebApp(tu.WebAppInfo("https://gria.tech")),
-			tu.KeyboardButton("Requestchat").WithRequestChat(&telego.KeyboardButtonRequestChat{
-				RequestID: int32(update.UpdateID),
-			}),
+		tu.KeyboardRow(
+			tu.KeyboardButton("🍽 Выбрать блюдо"),
+		),
+		tu.KeyboardRow(
+			tu.KeyboardButton("🎵 Предложить песню DJ"),
+		),
+		tu.KeyboardRow(
+			tu.KeyboardButton("🎉 Поздравить молодожёнов"),
+		),
+		tu.KeyboardRow(
+			tu.KeyboardButton("📝 Расписание мероприятия"),
+		),
+		tu.KeyboardRow(
+			tu.KeyboardButton("🤔 Что происходит сейчас"),
 		),
 	).WithResizeKeyboard().WithInputFieldPlaceholder("Select something")
 	// Multiple `with` methods can be chained
@@ -72,7 +72,7 @@ func processUpdate(bot *telego.Bot, update telego.Update) error {
 	// Creating message
 	msg := tu.Message(
 		tu.ID(update.Message.Chat.ID),
-		"Hello World",
+		"Свадьба Марии и Виктора! Выберите пункт меню:",
 	).WithReplyMarkup(keyboard).WithProtectContent() // Multiple `with` method
 
 	_, err := bot.SendMessage(msg)
