@@ -20,15 +20,13 @@ func NewConfigError(err error) *ConfigError {
 	return &ConfigError{error: err}
 }
 
-func configureBot() (*telego.Bot, error) {
+func configureBot(config *Config) (*telego.Bot, error) {
 	botToken, hasBotToken := os.LookupEnv("BOT_TOKEN")
 	if !hasBotToken {
 		return nil, fmt.Errorf("Specify Telegram bot token with 'BOT_TOKEN' environment variable")
 	}
 
-	_, isDebug := os.LookupEnv("DEBUG")
-
-	logger := telego.WithDefaultLogger(isDebug, true)
+	logger := telego.WithDefaultLogger(config.Debug, true)
 	bot, err := telego.NewBot(botToken, logger)
 	if err != nil {
 		return nil, fmt.Errorf("cannot make new bot: %w", err)
@@ -117,13 +115,13 @@ func startProcessingUpdates(ctx context.Context, bot *telego.Bot, workerCount in
 	return ctxx.Err()
 }
 
-func launchBot(ctx context.Context) error {
-	bot, err := configureBot()
+func launchBot(ctx context.Context, config *Config) error {
+	bot, err := configureBot(config)
 	if err != nil {
 		return NewConfigError(fmt.Errorf("configure error: %w", err))
 	}
 
-	err = startProcessingUpdates(ctx, bot, 2)
+	err = startProcessingUpdates(ctx, bot, 1)
 	if err != nil {
 		return fmt.Errorf("processing updates error: %w", err)
 	}
@@ -133,7 +131,13 @@ func launchBot(ctx context.Context) error {
 
 func main() {
 	for {
-		err := launchBot(context.Background())
+		config, err := LoadConfig()
+		if err != nil {
+			fmt.Println("cannot load config: %+v", err)
+			os.Exit(1)
+		}
+
+		err = launchBot(context.Background(), config)
 		var cfgErr *ConfigError
 		if errors.As(err, &cfgErr) {
 			fmt.Println(err)
@@ -142,11 +146,11 @@ func main() {
 		if err != nil {
 			fmt.Printf("An error occured: %+v\n", err)
 		}
-		_, isRestarting := os.LookupEnv("RESTARTING")
-		if !isRestarting {
+
+		timeoutSeconds := config.RestartTimeoutSeconds
+		if timeoutSeconds < 0 {
 			break
 		}
-		timeoutSeconds := 1
 		fmt.Printf("Restarting bot processing after %d seconds", timeoutSeconds)
 		time.Sleep(time.Duration(timeoutSeconds) * time.Second)
 	}
