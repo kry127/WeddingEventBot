@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/mymmrac/telego"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/bson"
 	"kry127.ru/weddingbot/repository"
 )
 
 const (
-	MongoRepositoryUserDB                  = "db"
+	MongoRepositoryUserDB                  = "weddingdb"
 	MongoRepositoryUserRememberCollection  = "remember"
 	MongoRepositoryUserSubscribeCollection = "subscribe"
 )
