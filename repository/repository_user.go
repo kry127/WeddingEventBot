@@ -25,6 +25,7 @@ type RepositoryUser interface {
 	ListRememberedUser(ctx context.Context) ([]*telego.User, error)
 
 	Subscribe(ctx context.Context, userID int64) error
+	Subscribed(ctx context.Context, userID int64) (bool, error)
 	Unsubscribe(ctx context.Context, userID int64) error
 
 	ScheduleMessage(ctx context.Context, messageSchedule ScheduledMessage) error

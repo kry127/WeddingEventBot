@@ -94,6 +94,16 @@ func (r *MongoRepositoryUser) Subscribe(ctx context.Context, userID int64) error
 	}
 	return nil
 }
+func (r *MongoRepositoryUser) Subscribed(ctx context.Context, userID int64) (bool, error) {
+	findOneRes := r.rememberCollection().FindOne(ctx, MakeMongoID(userID))
+	if findOneRes.Err() == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	if findOneRes.Err() != nil {
+		return false, fmt.Errorf("error finding id in subscription: %w", findOneRes.Err())
+	}
+	return true, nil
+}
 func (r *MongoRepositoryUser) Unsubscribe(ctx context.Context, userID int64) error {
 	_, err := r.rememberCollection().DeleteOne(ctx, MakeMongoID(userID))
 	if err != nil {
