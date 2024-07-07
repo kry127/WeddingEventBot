@@ -23,10 +23,18 @@ func LoadConfig() (*Config, error) {
 	} else {
 		restartTimeoutInt, err := strconv.Atoi(restartTimeout)
 		if err != nil {
-			return nil, fmt.Errorf("invalid format of RESTART_TIMEOUT env variable: should be integer (like '5'), got '%v'", restartTimeout)
+			return nil, NewConfigError(fmt.Errorf("invalid format of RESTART_TIMEOUT env variable: should be integer (like '5'), got '%v'", restartTimeout))
 		}
 		result.RestartTimeoutSeconds = restartTimeoutInt
 	}
 
 	return result, nil
+}
+
+type ConfigError struct {
+	error
+}
+
+func NewConfigError(err error) *ConfigError {
+	return &ConfigError{error: err}
 }

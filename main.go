@@ -12,14 +12,6 @@ import (
 	tu "github.com/mymmrac/telego/telegoutil"
 )
 
-type ConfigError struct {
-	error
-}
-
-func NewConfigError(err error) *ConfigError {
-	return &ConfigError{error: err}
-}
-
 func configureBot(config *Config) (*telego.Bot, error) {
 	botToken, hasBotToken := os.LookupEnv("BOT_TOKEN")
 	if !hasBotToken {
@@ -67,7 +59,6 @@ func processUpdate(bot *telego.Bot, update telego.Update) error {
 			tu.KeyboardButton("🤔 Что происходит сейчас"),
 		),
 	).WithResizeKeyboard().WithInputFieldPlaceholder("Select something")
-	// Multiple `with` methods can be chained
 
 	// Creating message
 	msg := tu.Message(
@@ -130,13 +121,13 @@ func launchBot(ctx context.Context, config *Config) error {
 }
 
 func main() {
-	for {
-		config, err := LoadConfig()
-		if err != nil {
-			fmt.Println("cannot load config: %+v", err)
-			os.Exit(1)
-		}
+	config, err := LoadConfig()
+	if err != nil {
+		fmt.Println("cannot load config: %+v", err)
+		os.Exit(1)
+	}
 
+	for {
 		err = launchBot(context.Background(), config)
 		var cfgErr *ConfigError
 		if errors.As(err, &cfgErr) {
