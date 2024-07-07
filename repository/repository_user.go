@@ -20,9 +20,9 @@ type MessageDelivery struct {
 }
 
 type RepositoryUser interface {
-	Remember(ctx context.Context, user telego.User) error
-	GetRememberedUser(ctx context.Context, userID int64) (telego.User, error)
-	ListRememberedUser(ctx context.Context) ([]telego.User, error)
+	Remember(ctx context.Context, user *telego.User) error
+	GetRememberedUser(ctx context.Context, userID int64) (*telego.User, error)
+	ListRememberedUser(ctx context.Context) ([]*telego.User, error)
 
 	Subscribe(ctx context.Context, userID int64) error
 	Unsubscribe(ctx context.Context, userID int64) error
