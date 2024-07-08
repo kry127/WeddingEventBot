@@ -7,12 +7,24 @@ import (
 )
 
 type Config struct {
+	MongoDBConnString     string
 	Debug                 bool
 	RestartTimeoutSeconds int
 }
 
-func LoadConfig() (*Config, error) {
+func LoadConfig() (cfg *Config, err error) {
+	defer func() {
+		if err != nil {
+			err = NewConfigError(err)
+		}
+	}()
 	result := new(Config)
+
+	if mongoDBConnString, ok := os.LookupEnv("MONGODB_CONN_STRING"); !ok {
+		return nil, fmt.Errorf("environment variable MONGODB_CONN_STRING should be filled with MongoDB connection string. Example: mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.10&tls=false")
+	} else {
+		result.MongoDBConnString = mongoDBConnString
+	}
 
 	_, isDebug := os.LookupEnv("DEBUG")
 	result.Debug = isDebug
@@ -23,7 +35,7 @@ func LoadConfig() (*Config, error) {
 	} else {
 		restartTimeoutInt, err := strconv.Atoi(restartTimeout)
 		if err != nil {
-			return nil, NewConfigError(fmt.Errorf("invalid format of RESTART_TIMEOUT env variable: should be integer (like '5'), got '%v'", restartTimeout))
+			return nil, fmt.Errorf("invalid format of RESTART_TIMEOUT env variable: should be integer (like '5'), got '%v'", restartTimeout)
 		}
 		result.RestartTimeoutSeconds = restartTimeoutInt
 	}
