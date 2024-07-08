@@ -8,6 +8,8 @@ import (
 
 type Config struct {
 	MongoDBConnString     string
+	User                  string
+	Password              string
 	Debug                 bool
 	RestartTimeoutSeconds int
 }

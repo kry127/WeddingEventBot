@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	MongoRepositoryUserDB                  = "weddingdb"
 	MongoRepositoryUserRememberCollection  = "remember"
 	MongoRepositoryUserSubscribeCollection = "subscribe"
 )
@@ -37,21 +36,23 @@ func MakeMongoUser(user *telego.User) MongoUser {
 }
 
 type MongoRepositoryUser struct {
+	db          string
 	mongoClient *mongo.Client
 }
 
-func NewMongoRepositoryUser(mongoClient *mongo.Client) *MongoRepositoryUser {
+func NewMongoRepositoryUser(database string, mongoClient *mongo.Client) *MongoRepositoryUser {
 	return &MongoRepositoryUser{
+		db:          database,
 		mongoClient: mongoClient,
 	}
 }
 
 func (r *MongoRepositoryUser) rememberCollection() *mongo.Collection {
-	return r.mongoClient.Database(MongoRepositoryUserDB).Collection(MongoRepositoryUserRememberCollection)
+	return r.mongoClient.Database(r.db).Collection(MongoRepositoryUserRememberCollection)
 }
 
 func (r *MongoRepositoryUser) subscribeCollection() *mongo.Collection {
-	return r.mongoClient.Database(MongoRepositoryUserDB).Collection(MongoRepositoryUserSubscribeCollection)
+	return r.mongoClient.Database(r.db).Collection(MongoRepositoryUserSubscribeCollection)
 }
 
 func (r *MongoRepositoryUser) Remember(ctx context.Context, user *telego.User) error {
