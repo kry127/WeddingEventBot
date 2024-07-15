@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"kry127.ru/weddingbot/config"
 	"os"
 	"sync"
 	"time"
@@ -12,7 +13,7 @@ import (
 	tu "github.com/mymmrac/telego/telegoutil"
 )
 
-func configureBot(config *Config) (*telego.Bot, error) {
+func configureBot(config *config.Config) (*telego.Bot, error) {
 	botToken, hasBotToken := os.LookupEnv("BOT_TOKEN")
 	if !hasBotToken {
 		return nil, fmt.Errorf("Specify Telegram bot token with 'BOT_TOKEN' environment variable")
@@ -106,10 +107,10 @@ func startProcessingUpdates(ctx context.Context, bot *telego.Bot, workerCount in
 	return ctxx.Err()
 }
 
-func launchBot(ctx context.Context, config *Config) error {
-	bot, err := configureBot(config)
+func launchBot(ctx context.Context, cfg *config.Config) error {
+	bot, err := configureBot(cfg)
 	if err != nil {
-		return NewConfigError(fmt.Errorf("configure error: %w", err))
+		return config.NewConfigError(fmt.Errorf("configure error: %w", err))
 	}
 
 	err = startProcessingUpdates(ctx, bot, 1)
@@ -121,15 +122,15 @@ func launchBot(ctx context.Context, config *Config) error {
 }
 
 func main() {
-	config, err := LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Println("cannot load config: %+v", err)
+		fmt.Printf("cannot load config: %+v\n", err)
 		os.Exit(1)
 	}
 
 	for {
-		err = launchBot(context.Background(), config)
-		var cfgErr *ConfigError
+		err = launchBot(context.Background(), cfg)
+		var cfgErr *config.ConfigError
 		if errors.As(err, &cfgErr) {
 			fmt.Println(err)
 			os.Exit(1)
@@ -138,7 +139,7 @@ func main() {
 			fmt.Printf("An error occured: %+v\n", err)
 		}
 
-		timeoutSeconds := config.RestartTimeoutSeconds
+		timeoutSeconds := cfg.RestartTimeoutSeconds
 		if timeoutSeconds < 0 {
 			break
 		}

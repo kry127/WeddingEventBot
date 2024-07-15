@@ -25,3 +25,6 @@ vendor
 # VSCode workspace file
 *.code-workspace
 .vscode
+
+# IDEA
+.idea
